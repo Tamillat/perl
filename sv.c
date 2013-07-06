@@ -13471,10 +13471,6 @@ perl_clone_using(PerlInterpreter *proto_perl, UV flags,
 
     Zero(PL_sv_consts, SV_CONSTS_COUNT, SV*);
 
-    /* This PV will be free'd special way so must set it same way op.c does */
-    PL_compiling.cop_file    = savesharedpv(PL_compiling.cop_file);
-    ptr_table_store(PL_ptr_table, proto_perl->Icompiling.cop_file, PL_compiling.cop_file);
-
     ptr_table_store(PL_ptr_table, &proto_perl->Icompiling, &PL_compiling);
     PL_compiling.cop_warnings = DUP_WARNINGS(PL_compiling.cop_warnings);
     CopHINTHASH_set(&PL_compiling, cophh_copy(CopHINTHASH_get(&PL_compiling)));
@@ -13535,6 +13531,14 @@ perl_clone_using(PerlInterpreter *proto_perl, UV flags,
 	PADOFFSET o = 0;
 	for (; o < PL_stashpadmax; ++o)
 	    PL_stashpad[o] = hv_dup(proto_perl->Istashpad[o], param);
+    }
+    PL_filegvpadmax	= proto_perl->Ifilegvpadmax;
+    PL_filegvpadix	= proto_perl->Ifilegvpadix ;
+    Newx(PL_filegvpad, PL_filegvpadmax, GV *);
+    {
+	PADOFFSET o = 0;
+	for (; o < PL_filegvpadmax; ++o)
+	    PL_filegvpad[o] = gv_dup(proto_perl->Ifilegvpad[o], param);
     }
 
     /* shortcuts to various I/O objects */
